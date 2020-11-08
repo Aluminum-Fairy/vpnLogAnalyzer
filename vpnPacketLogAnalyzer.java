@@ -15,7 +15,8 @@ public class vpnPacketLogAnalyzer {
 		String packetInfo[] = new String[3];
 		File fname;
 		int lineNum, httpLineNum, minS, minE, printLineNum,logTime;
-		final String version = "1.02.1";
+		boolean bTargetUrl,bUserName,bHttpMethod;
+		final String version = "1.03.0";
 		ArrayList<String> logArr = new ArrayList<String>();
 		ArrayList<String> httplogArr = new ArrayList<String>();
 		ArrayList<ArrayList<String>> httplog = new ArrayList<ArrayList<String>>();
@@ -86,8 +87,33 @@ public class vpnPacketLogAnalyzer {
 
 			while (true) {
 				UserName = inputStrData("\n検索対象ユーザー名");
+				if(UserName != ""){
+					bUserName = !UserName.substring(0,1).contains("!");
+					if(!bUserName){
+						UserName = UserName.substring(1);
+					}
+				}else{
+					bUserName = true;
+				}
 				targetUrl = inputStrData("検索対象URL");
+				if(targetUrl !=""){
+					bTargetUrl = !targetUrl.substring(0, 1).contains("!");
+					if(!bTargetUrl){
+						targetUrl = targetUrl.substring(1);
+					}
+				}else{
+					bTargetUrl = true;
+				}
 				httpMethod = inputStrData("Connection Type");
+				if(httpMethod !=""){
+					bHttpMethod = !httpMethod.substring(0,1).contains("!");
+					if(!bHttpMethod){
+						httpMethod = httpMethod.substring(1);
+					}
+				}else{
+					bHttpMethod = true;
+				}
+
 				while (true) {
 					sTime = inputStrData("始点時間(HH:MM)");
 					eTime = inputStrData("終点時間(HH:MM)");
@@ -106,6 +132,7 @@ public class vpnPacketLogAnalyzer {
 					}
 					System.out.println("時間指定をやり直してください");
 				}
+
 				printLineNum = 0;
 				System.out.printf("\n\n%9s | %15s | %11s | %s\n", "Time", "UserName", "Type", "ConnectionPoint");
 				for (int i = 0; i < httplog.size(); i++) {
@@ -113,9 +140,9 @@ public class vpnPacketLogAnalyzer {
 					packetInfo = httplogArr.get(urlC.pakcetInfo).split(" ", 0);
 					logTime =  	Integer.parseInt(httplogArr.get(urlC.time).split(":", 0)[0]) * 60+
 								Integer.parseInt(httplogArr.get(urlC.time).split(":", 0)[1]);
-					if ((httplogArr.get(urlC.User).contains(UserName) || UserName == "")
-							&& (packetInfo[1].contains(httpMethod) || httpMethod == "")
-							&& (packetInfo[2].contains(targetUrl) || targetUrl == "")
+					if ((bUserName == httplogArr.get(urlC.User).contains(UserName) || UserName == "")
+							&& (bHttpMethod == packetInfo[1].contains(httpMethod) || httpMethod == "")
+							&& (bTargetUrl == packetInfo[2].contains(targetUrl) || targetUrl == "")
 							&& minS <= logTime
 							&& minE >= logTime) {
 
