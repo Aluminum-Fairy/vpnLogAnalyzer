@@ -15,6 +15,7 @@ public class vpnPacketLogAnalyzer {
 		String packetInfo[] = new String[3];
 		File fname;
 		int lineNum, httpLineNum, minS, minE, printLineNum;
+		final String version = "1.01";
 		ArrayList<String> logArr = new ArrayList<String>();
 		ArrayList<ArrayList<String>> httplog = new ArrayList<ArrayList<String>>();
 
@@ -23,7 +24,7 @@ public class vpnPacketLogAnalyzer {
 			System.out.printf("%5s+-----------------------------------------+\n", "");
 			System.out.printf("%5s|   SoftEther VPN Log Analyzer JAVA Ver   |\n", "");
 			System.out.printf("%5s+-----------------------------------------+\n", "");
-			System.out.printf("%30s\n\n", "Version 1.00");
+			System.out.printf("%25s %s\n\n", "Version",version);
 			File list = new File("./PacketLog/");
 			File files[] = list.listFiles();
 			Arrays.sort(files);
