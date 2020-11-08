@@ -1,38 +1,35 @@
 import java.io.*;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import logConst.urlConst;
-
 
 public class vpnPacketLogAnalyzer {
 	public static void main(String[] args) {
 
 		urlConst urlC = new urlConst();
 
-		String UserName,logline,targetUrl,retry,httpMethod,sTime,eTime;
+		String UserName, logline, targetUrl, retry, httpMethod, sTime, eTime;
 		String packetInfo[] = new String[3];
 		File fname;
-		int lineNum,httpLineNum,minS,minE;
-		ArrayList <String> logArr = new ArrayList<String>();
-		ArrayList<ArrayList<String>>httplog = new ArrayList<ArrayList<String>>();
+		int lineNum, httpLineNum, minS, minE, printLineNum;
+		ArrayList<String> logArr = new ArrayList<String>();
+		ArrayList<ArrayList<String>> httplog = new ArrayList<ArrayList<String>>();
 
-		while(true){
+		while (true) {
 			cslClear();
 			System.out.printf("%5s+-----------------------------------------+\n", "");
 			System.out.printf("%5s|   SoftEther VPN Log Analyzer JAVA Ver   |\n", "");
 			System.out.printf("%5s+-----------------------------------------+\n", "");
-			System.out.printf("%30s\n\n","Version 1.00");
+			System.out.printf("%30s\n\n", "Version 1.00");
 			File list = new File("./PacketLog/");
 			File files[] = list.listFiles();
 			Arrays.sort(files);
 			while (true) {
 				for (int i = 0; i < files.length; i++) {
-					System.out.printf("%3d | %30s | %4.3fMB\n", i + 1, files[i],files[i].length()/1024.0/1024.0);
+					System.out.printf("%3d | %30s | %4.3fMB\n", i + 1, files[i], files[i].length() / 1024.0 / 1024.0);
 				}
 				try {
 					fname = files[inputNumData("ファイルを選択(番号)") - 1];
@@ -66,7 +63,7 @@ public class vpnPacketLogAnalyzer {
 
 			System.out.print("完了\n  展開中...");
 			String[] logtmp;
-			httpLineNum=0;
+			httpLineNum = 0;
 			for (int i = 0; i < logArr.size(); i++) {
 				logline = logArr.get(i);
 				if (logline.contains("HttpUrl")) {
@@ -89,51 +86,56 @@ public class vpnPacketLogAnalyzer {
 				UserName = inputStrData("\n検索対象ユーザー名");
 				targetUrl = inputStrData("検索対象URL");
 				httpMethod = inputStrData("Connection Type");
-				while(true){
-					sTime= inputStrData("始点時間(HH:MM)");
+				while (true) {
+					sTime = inputStrData("始点時間(HH:MM)");
 					eTime = inputStrData("終点時間(HH:MM)");
-					if(sTime != ""){
-						minS = Integer.parseInt(sTime.split(":", 0)[0])*60 + Integer.parseInt(sTime.split(":",0)[1]);
-					}else{
-						minS=0;
+					if (sTime != "") {
+						minS = Integer.parseInt(sTime.split(":", 0)[0]) * 60 + Integer.parseInt(sTime.split(":", 0)[1]);
+					} else {
+						minS = 0;
 					}
-					if(eTime != ""){
-						minE  = Integer.parseInt(eTime.split(":", 0)[0])*60 + Integer.parseInt(eTime.split(":",0)[1]);
-					}else{
+					if (eTime != "") {
+						minE = Integer.parseInt(eTime.split(":", 0)[0]) * 60 + Integer.parseInt(eTime.split(":", 0)[1]);
+					} else {
 						minE = 1440;
 					}
-					if(minE > minS){
+					if (minE > minS) {
 						break;
 					}
 					System.out.println("時間指定をやり直してください");
 				}
-
-				System.out.printf("%9s | %15s | %11s | %s\n","Time", "UserName", "Type", "ConnectionPoint");
+				printLineNum = 0;
+				System.out.printf("\n\n%9s | %15s | %11s | %s\n", "Time", "UserName", "Type", "ConnectionPoint");
 				for (int i = 0; i < httplog.size(); i++) {
 					packetInfo = httplog.get(i).get(urlC.pakcetInfo).split(" ", 0);
-					if ((httplog.get(i).get(urlC.User).contains(UserName) || UserName == "")&&
-					 (packetInfo[1].contains(httpMethod) || httpMethod == "") && (packetInfo[2].contains(targetUrl) || targetUrl == "") &&
-					  minS <= Integer.parseInt(httplog.get(i).get(urlC.time).split(":", 0)[0])*60 + Integer.parseInt(httplog.get(i).get(urlC.time).split(":",0)[1]) &&
-					  minE >= Integer.parseInt(httplog.get(i).get(urlC.time).split(":", 0)[0])*60 + Integer.parseInt(httplog.get(i).get(urlC.time).split(":",0)[1])
-					  ) {
+					if ((httplog.get(i).get(urlC.User).contains(UserName) || UserName == "")
+							&& (packetInfo[1].contains(httpMethod) || httpMethod == "")
+							&& (packetInfo[2].contains(targetUrl) || targetUrl == "")
+							&& minS <= Integer.parseInt(httplog.get(i).get(urlC.time).split(":", 0)[0]) * 60
+									+ Integer.parseInt(httplog.get(i).get(urlC.time).split(":", 0)[1])
+							&& minE >= Integer.parseInt(httplog.get(i).get(urlC.time).split(":", 0)[0]) * 60
+									+ Integer.parseInt(httplog.get(i).get(urlC.time).split(":", 0)[1])) {
 
-						System.out.printf("%9s | %15s | %11s | %s\n",httplog.get(i).get(urlC.time).split(Pattern.quote("."),0)[0], httplog.get(i).get(urlC.User).split("-", 0)[1],
-								packetInfo[1].split("=", 0)[1], packetInfo[2].split("=", 2)[1]);
+						System.out.printf("%9s | %15s | %11s | %s\n",
+								httplog.get(i).get(urlC.time).split(Pattern.quote("."), 0)[0],
+								httplog.get(i).get(urlC.User).split("-", 0)[1], packetInfo[1].split("=", 0)[1],
+								packetInfo[2].split("=", 2)[1]);
+						printLineNum++;
 					}
 				}
-				System.out.println();
-				while(true){
-					retry =inputStrData("検索条件を指定し直しますか(y/n)");
-					if(retry.contains("y") || retry.contains("n")){
+				System.out.printf("\n%8d / %8d\n\n", printLineNum, httpLineNum);
+				while (true) {
+					retry = inputStrData("検索条件を指定し直しますか(y/n)");
+					if (retry.contains("y") || retry.contains("n")) {
 						break;
 					}
 				}
-				if(retry.contains("n")){
-					packetInfo=null;
-					UserName=null;
-					targetUrl=null;
-					httpMethod=null;
-					retry=null;
+				if (retry.contains("n")) {
+					packetInfo = null;
+					UserName = null;
+					targetUrl = null;
+					httpMethod = null;
+					retry = null;
 					httplog.clear();
 					break;
 				}
@@ -179,7 +181,7 @@ public class vpnPacketLogAnalyzer {
 		if (input.equals("-2")) {
 			cslClear();
 			System.exit(0);
-		}else if(input.equals("-1")){
+		} else if (input.equals("-1")) {
 			return "";
 		}
 		return input;
@@ -189,4 +191,5 @@ public class vpnPacketLogAnalyzer {
 		System.out.print("\033[H\033[2J");
 		System.out.flush();
 	}
+
 }
