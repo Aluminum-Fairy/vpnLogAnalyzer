@@ -14,9 +14,10 @@ public class vpnPacketLogAnalyzer {
 		String UserName, logline, targetUrl, retry, httpMethod, sTime, eTime;
 		String packetInfo[] = new String[3];
 		File fname;
-		int lineNum, httpLineNum, minS, minE, printLineNum;
-		final String version = "1.02";
+		int lineNum, httpLineNum, minS, minE, printLineNum,logTime;
+		final String version = "1.02.1";
 		ArrayList<String> logArr = new ArrayList<String>();
+		ArrayList<String> httplogArr = new ArrayList<String>();
 		ArrayList<ArrayList<String>> httplog = new ArrayList<ArrayList<String>>();
 
 		while (true) {
@@ -108,23 +109,26 @@ public class vpnPacketLogAnalyzer {
 				printLineNum = 0;
 				System.out.printf("\n\n%9s | %15s | %11s | %s\n", "Time", "UserName", "Type", "ConnectionPoint");
 				for (int i = 0; i < httplog.size(); i++) {
-					packetInfo = httplog.get(i).get(urlC.pakcetInfo).split(" ", 0);
-					if ((httplog.get(i).get(urlC.User).contains(UserName) || UserName == "")
+					httplogArr = httplog.get(i);
+					packetInfo = httplogArr.get(urlC.pakcetInfo).split(" ", 0);
+					logTime =  	Integer.parseInt(httplogArr.get(urlC.time).split(":", 0)[0]) * 60+
+								Integer.parseInt(httplogArr.get(urlC.time).split(":", 0)[1]);
+					if ((httplogArr.get(urlC.User).contains(UserName) || UserName == "")
 							&& (packetInfo[1].contains(httpMethod) || httpMethod == "")
 							&& (packetInfo[2].contains(targetUrl) || targetUrl == "")
-							&& minS <= Integer.parseInt(httplog.get(i).get(urlC.time).split(":", 0)[0]) * 60
-									+ Integer.parseInt(httplog.get(i).get(urlC.time).split(":", 0)[1])
-							&& minE >= Integer.parseInt(httplog.get(i).get(urlC.time).split(":", 0)[0]) * 60
-									+ Integer.parseInt(httplog.get(i).get(urlC.time).split(":", 0)[1])) {
+							&& minS <= logTime
+							&& minE >= logTime) {
 
 						System.out.printf("%9s | %15s | %11s | %s\n",
-								httplog.get(i).get(urlC.time).split(Pattern.quote("."), 0)[0],
-								httplog.get(i).get(urlC.User).split("-", 0)[1], packetInfo[1].split("=", 0)[1],
+								httplogArr.get(urlC.time).split(Pattern.quote("."), 0)[0],
+								httplogArr.get(urlC.User).split("-", 0)[1],
+								packetInfo[1].split("=", 0)[1],
 								packetInfo[2].split("=", 2)[1]);
 						printLineNum++;
 					}
 				}
 				System.out.printf("\n%8d / %8d\n\n", printLineNum, httpLineNum);
+
 				while (true) {
 					retry = inputStrData("åüçıèåèÇéwíËÇµíºÇµÇ‹Ç∑Ç©(y/n)");
 					if (retry.contains("y") || retry.contains("n")) {
