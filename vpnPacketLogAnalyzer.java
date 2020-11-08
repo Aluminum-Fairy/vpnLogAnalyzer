@@ -15,7 +15,7 @@ public class vpnPacketLogAnalyzer {
 		String packetInfo[] = new String[3];
 		File fname;
 		int lineNum, httpLineNum, minS, minE, printLineNum;
-		final String version = "1.01";
+		final String version = "1.02";
 		ArrayList<String> logArr = new ArrayList<String>();
 		ArrayList<ArrayList<String>> httplog = new ArrayList<ArrayList<String>>();
 
@@ -29,11 +29,11 @@ public class vpnPacketLogAnalyzer {
 			File files[] = list.listFiles();
 			Arrays.sort(files);
 			while (true) {
-				for (int i = 0; i < files.length; i++) {
-					System.out.printf("%3d | %30s | %4.3fMB\n", i + 1, files[i], files[i].length() / 1024.0 / 1024.0);
+				for (int i = files.length-1; i >=0 ; i--) {
+					System.out.printf("%3d | %30s | %4.3fMB\n", files.length - i, files[i], files[i].length() / 1024.0 / 1024.0);
 				}
 				try {
-					fname = files[inputNumData("ファイルを選択(番号)") - 1];
+					fname = files[files.length - inputNumData("ファイルを選択(番号)")];
 					break;
 				} catch (ArrayIndexOutOfBoundsException e) {
 					cslClear();
