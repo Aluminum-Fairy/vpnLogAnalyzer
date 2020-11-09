@@ -12,7 +12,7 @@ public class vpnPacketLogAnalyzer {
 
 		urlConst urlC = new urlConst();
 
-		String UserName, logline, targetUrl, retry, httpMethod, sTime, eTime;
+		String UserName, logline, targetUrl, retry,fs, httpMethod, sTime, eTime;
 		String packetInfo[] = new String[3];
 		File fname;
 		int lineNum, httpLineNum, minS, minE, printLineNum,logTime;
@@ -52,21 +52,22 @@ public class vpnPacketLogAnalyzer {
 				BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fname));
 				bis.read(data);
 				bis.close();
-				String fs = new String(data, "utf-8");
-				String[] fsArr = fs.split("\n", 0);
-				for (; lineNum < fsArr.length; lineNum++) {
-					logArr.add(fsArr[lineNum]);
-				}
+				fs = new String(data, "utf-8");
 				data = null;
-				fs = null;
-				fsArr = null;
-				fname = null;
 			} catch (Exception e) {
 				System.out.println("ロードに失敗しました:" + e);
+				fs="";
 				System.exit(1);
 			}
 
 			System.out.print("完了\n  展開中...");
+			String[] fsArr = fs.split("\n", 0);
+			for (; lineNum < fsArr.length; lineNum++) {
+				logArr.add(fsArr[lineNum]);
+			}
+			fs = null;
+			fsArr = null;
+			fname = null;
 			String[] logtmp;
 			httpLineNum = 0;
 			for (int i = 0; i < logArr.size(); i++) {
@@ -222,6 +223,8 @@ public class vpnPacketLogAnalyzer {
 		}else if(input.equals("-3")){
 			System.out.println(getMemoryInfo());
 			return inputStrData(msg);
+		}else if(input.equals("")){
+			return "";
 		}
 		return input;
 	}
