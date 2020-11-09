@@ -170,7 +170,6 @@ public class vpnPacketLogAnalyzer {
 					targetUrl = null;
 					httpMethod = null;
 					retry = null;
-					logTime = null;
 					httplogArr.clear();
 					httplog.clear();
 					break;
@@ -220,8 +219,6 @@ public class vpnPacketLogAnalyzer {
 		if (input.equals("-2")) {
 			cslClear();
 			System.exit(0);
-		} else if (input.equals("-1")) {
-			return "";
 		}else if(input.equals("-3")){
 			System.out.println(getMemoryInfo());
 			return inputStrData(msg);
