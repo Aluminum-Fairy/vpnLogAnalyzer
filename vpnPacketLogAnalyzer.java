@@ -83,6 +83,7 @@ public class vpnPacketLogAnalyzer {
 							logArr.add(fline);
 							lineNum++;
 						}
+						filereader.close();
 					}catch (IOException eee){
 						System.out.println(eee);
 					}
