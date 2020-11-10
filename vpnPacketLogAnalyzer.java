@@ -17,7 +17,7 @@ public class vpnPacketLogAnalyzer {
 		File fname;
 		int lineNum, httpLineNum, minS, minE, printLineNum,logTime;
 		boolean bTargetUrl,bUserName,bHttpMethod;
-		final String version = "1.04.1";
+		final String version = "1.04.2";
 		ArrayList<String> logArr = new ArrayList<String>();
 		ArrayList<String> httplogArr = new ArrayList<String>();
 		ArrayList<ArrayList<String>> httplog = new ArrayList<ArrayList<String>>();
@@ -59,13 +59,24 @@ public class vpnPacketLogAnalyzer {
 				System.out.println("ロードに失敗しました:" + e);
 				fs="";
 				System.exit(1);
+			} catch (OutOfMemoryError e){
+				System.out.println("失敗\nメモリ不足です。プログラムを終了します。");
+				fs = "";
+				System.exit(1);
 			}
 
 			System.out.print("完了\n  展開中...");
-			String[] fsArr = fs.split("\n", 0);
-			for (; lineNum < fsArr.length; lineNum++) {
-				logArr.add(fsArr[lineNum]);
+			try{
+				String[] fsArr = fs.split("\n", 0);
+				for (; lineNum < fsArr.length; lineNum++) {
+					logArr.add(fsArr[lineNum]);
+				}
+			}catch (OutOfMemoryError e){
+				System.out.println("失敗\nメモリ不足です。プログラムを終了します。");
+				String [] fsArr ={"0"};
+				System.exit(1);
 			}
+
 			fs = null;
 			fsArr = null;
 			fname = null;
