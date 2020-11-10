@@ -12,13 +12,12 @@ public class vpnPacketLogAnalyzer {
 
 		urlConst urlC = new urlConst();
 
-		String UserName, logline, targetUrl, retry,fs, httpMethod, sTime, eTime;
+		String UserName, targetUrl, retry,fs, httpMethod, sTime, eTime;
 		String packetInfo[] = new String[3];
 		File fname;
 		int lineNum, httpLineNum, minS, minE, printLineNum,logTime;
 		boolean bTargetUrl,bUserName,bHttpMethod;
-		final String version = "1.05.1";
-		ArrayList<String> logArr = new ArrayList<String>();
+		final String version = "1.06.0(b00)";
 		ArrayList<String> httplogArr = new ArrayList<String>();
 		ArrayList<ArrayList<String>> httplog = new ArrayList<ArrayList<String>>();
 
@@ -48,6 +47,8 @@ public class vpnPacketLogAnalyzer {
 			cslClear();
 			System.out.printf("選択されたファイル:%s\nロード中...", fname);
 			lineNum = 0;
+			httpLineNum = 0;
+			String[] logtmp;
 			try {
 				byte[] data = new byte[(int) fname.length()];
 				BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fname));
@@ -59,7 +60,15 @@ public class vpnPacketLogAnalyzer {
 				try {
 					String[] fsArr = fs.split("\n", 0);
 					for (; lineNum < fsArr.length; lineNum++) {
-						logArr.add(fsArr[lineNum]);
+						if (fsArr[lineNum].contains("HttpUrl")) {
+							ArrayList<String> loglinetmp = new ArrayList<String>();
+							logtmp = fsArr[lineNum].split(",", 0);
+							for (int j = 0; j < logtmp.length; j++) {
+								loglinetmp.add(logtmp[j]);
+							}
+							httpLineNum++;
+							httplog.add((ArrayList<String>) loglinetmp);
+						}
 					}
 					fsArr = null;
 				} catch (OutOfMemoryError e) {
@@ -72,7 +81,7 @@ public class vpnPacketLogAnalyzer {
 				fs="";
 				System.exit(1);
 			} catch (OutOfMemoryError e){
-				System.out.print("失敗\nメモリ不足です。低速で読み込みます。\nロード中...");
+				System.out.print("失敗\nメモリ不足です。低速で読み込みます。\nロード, 展開中...");
 				fs = "";
 				try{
 					FileReader filereader = new FileReader(fname);
@@ -80,14 +89,21 @@ public class vpnPacketLogAnalyzer {
 					String fline;
 					try{
 						while (( fline= fileb.readLine()) != null){
-							logArr.add(fline);
+							if (fline.contains("HttpUrl")) {
+								ArrayList<String> loglinetmp = new ArrayList<String>();
+								logtmp = fline.split(",", 0);
+								for (int j = 0; j < logtmp.length; j++) {
+									loglinetmp.add(logtmp[j]);
+								}
+								httpLineNum++;
+								httplog.add((ArrayList<String>) loglinetmp);
+							}
 							lineNum++;
 						}
 						filereader.close();
 					}catch (IOException eee){
 						System.out.println(eee);
 					}
-					System.out.print("完了\n  展開中...");
 
 				}catch(FileNotFoundException ee){
 					System.out.println("ロードに失敗しました:" + e);
@@ -99,23 +115,7 @@ public class vpnPacketLogAnalyzer {
 			}
 			fs = null;
 			fname = null;
-			String[] logtmp;
-			httpLineNum = 0;
-			for (int i = 0; i < logArr.size(); i++) {
-				logline = logArr.get(i);
-				if (logline.contains("HttpUrl")) {
-					ArrayList<String> loglinetmp = new ArrayList<String>();
-					logtmp = logArr.get(i).split(",", 0);
-					for (int j = 0; j < logtmp.length; j++) {
-						loglinetmp.add(logtmp[j]);
-					}
-					httpLineNum++;
-					httplog.add((ArrayList<String>) loglinetmp);
-				}
-			}
 			logtmp = null;
-			logline = null;
-			logArr.clear();
 
 			System.out.printf("完了\n%10s:%8d\n%8s:%8d\n", "ログ行数", lineNum, "検索対象行数", httpLineNum);
 
