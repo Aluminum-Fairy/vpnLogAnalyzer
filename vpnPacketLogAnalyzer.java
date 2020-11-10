@@ -17,7 +17,7 @@ public class vpnPacketLogAnalyzer {
 		File fname;
 		int lineNum, httpLineNum, minS, minE, printLineNum,logTime;
 		boolean bTargetUrl,bUserName,bHttpMethod;
-		final String version = "1.04.2";
+		final String version = "1.05.0";
 		ArrayList<String> logArr = new ArrayList<String>();
 		ArrayList<String> httplogArr = new ArrayList<String>();
 		ArrayList<ArrayList<String>> httplog = new ArrayList<ArrayList<String>>();
@@ -55,32 +55,48 @@ public class vpnPacketLogAnalyzer {
 				bis.close();
 				fs = new String(data, "utf-8");
 				data = null;
+				System.out.print("完了\n  展開中...");
+				try {
+					String[] fsArr = fs.split("\n", 0);
+					for (; lineNum < fsArr.length; lineNum++) {
+						logArr.add(fsArr[lineNum]);
+					}
+					fsArr = null;
+				} catch (OutOfMemoryError e) {
+					System.out.println("失敗\nメモリ不足です。プログラムを終了します。");
+					System.out.println(getMemoryInfo());
+					System.exit(1);
+				}
 			} catch (Exception e) {
 				System.out.println("ロードに失敗しました:" + e);
 				fs="";
 				System.exit(1);
 			} catch (OutOfMemoryError e){
-				System.out.println("失敗\nメモリ不足です。プログラムを終了します。");
-				System.out.println(getMemoryInfo());
+				System.out.print("失敗\nメモリ不足です。低速で読み込みます。\nロード中...");
 				fs = "";
-				System.exit(1);
-			}
+				try{
+					FileReader filereader = new FileReader(fname);
+					BufferedReader fileb = new BufferedReader(filereader);
+					String fline;
+					try{
+						while (( fline= fileb.readLine()) != null){
+							logArr.add(fline);
+							lineNum++;
+						}
+					}catch (IOException eee){
+						System.out.println(eee);
+					}
 
-			System.out.print("完了\n  展開中...");
-			try{
-				String[] fsArr = fs.split("\n", 0);
-				for (; lineNum < fsArr.length; lineNum++) {
-					logArr.add(fsArr[lineNum]);
+				}catch(FileNotFoundException ee){
+					System.out.println("ロードに失敗しました:" + e);
+				} catch (OutOfMemoryError ee) {
+					System.out.println("失敗\nメモリ不足です。プログラムを終了します。");
+					System.out.println(getMemoryInfo());
+					System.exit(1);
 				}
-			}catch (OutOfMemoryError e){
-				System.out.println("失敗\nメモリ不足です。プログラムを終了します。");
-				System.out.println(getMemoryInfo());
-				String [] fsArr ={"0"};
-				System.exit(1);
 			}
-
+			System.out.print("完了\n  展開中...");
 			fs = null;
-			fsArr = null;
 			fname = null;
 			String[] logtmp;
 			httpLineNum = 0;
