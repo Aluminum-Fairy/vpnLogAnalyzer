@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 
 import logConst.urlConst;
 
-public class vpnPacketLogAnalyzer {
+public class vpnPacketLogAnalyzerBeta {
 	public static void main(String[] args) {
 
 		urlConst urlC = new urlConst();
