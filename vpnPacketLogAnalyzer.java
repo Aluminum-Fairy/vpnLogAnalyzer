@@ -61,6 +61,7 @@ public class vpnPacketLogAnalyzer {
 				System.exit(1);
 			} catch (OutOfMemoryError e){
 				System.out.println("失敗\nメモリ不足です。プログラムを終了します。");
+				System.out.println(getMemoryInfo());
 				fs = "";
 				System.exit(1);
 			}
@@ -73,6 +74,7 @@ public class vpnPacketLogAnalyzer {
 				}
 			}catch (OutOfMemoryError e){
 				System.out.println("失敗\nメモリ不足です。プログラムを終了します。");
+				System.out.println(getMemoryInfo());
 				String [] fsArr ={"0"};
 				System.exit(1);
 			}
