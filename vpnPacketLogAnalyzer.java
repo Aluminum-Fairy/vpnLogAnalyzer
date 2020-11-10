@@ -17,7 +17,7 @@ public class vpnPacketLogAnalyzer {
 		File fname;
 		int lineNum, httpLineNum, minS, minE, printLineNum,logTime;
 		boolean bTargetUrl,bUserName,bHttpMethod;
-		final String version = "1.05.0";
+		final String version = "1.05.1";
 		ArrayList<String> logArr = new ArrayList<String>();
 		ArrayList<String> httplogArr = new ArrayList<String>();
 		ArrayList<ArrayList<String>> httplog = new ArrayList<ArrayList<String>>();
@@ -86,6 +86,7 @@ public class vpnPacketLogAnalyzer {
 					}catch (IOException eee){
 						System.out.println(eee);
 					}
+					System.out.print("完了\n  展開中...");
 
 				}catch(FileNotFoundException ee){
 					System.out.println("ロードに失敗しました:" + e);
@@ -95,7 +96,6 @@ public class vpnPacketLogAnalyzer {
 					System.exit(1);
 				}
 			}
-			System.out.print("完了\n  展開中...");
 			fs = null;
 			fname = null;
 			String[] logtmp;
