@@ -26,7 +26,7 @@ public class vpnPacketLogAnalyzerBeta {
 			System.out.printf("%5s+-----------------------------------------+\n", "B");
 			System.out.printf("%5s|   SoftEther VPN Log Analyzer JAVA Ver   |\n", "E");
 			System.out.printf("%5s+-----------------------------------------+\n", "T");
-			System.out.printf("%5s%20s %s\n\n", "Version","A",version);
+			System.out.printf("%5s%20s %s\n\n","A", "Version",version);
 
 			while (true) {
 				File list = new File("./PacketLog/");
