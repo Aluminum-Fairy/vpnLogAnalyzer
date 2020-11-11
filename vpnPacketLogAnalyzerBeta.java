@@ -17,7 +17,7 @@ public class vpnPacketLogAnalyzerBeta {
 		File fname;
 		int lineNum, httpLineNum, minS, minE, printLineNum,logTime;
 		boolean bTargetUrl,bUserName,bHttpMethod;
-		final String version = "1.06.0(b01)";
+		final String version = "1.06.0(b02)";
 		ArrayList<String> httplogArr = new ArrayList<String>();
 		ArrayList<ArrayList<String>> httplog = new ArrayList<ArrayList<String>>();
 
@@ -188,7 +188,7 @@ public class vpnPacketLogAnalyzerBeta {
 						printLineNum++;
 					}
 				}
-				System.out.printf("\n%8d / %8d\n\n", printLineNum, httpLineNum);
+				System.out.printf("\n%8d / %8d (%3f %%)\n\n", printLineNum, httpLineNum,(float)printLineNum/httpLineNum*100.0);
 
 				while (true) {
 					retry = inputStrData("検索条件を指定し直しますか(y/n)");
