@@ -12,14 +12,23 @@ public class vpnPacketLogAnalyzerBeta {
 
 		urlConst urlC = new urlConst();
 
-		String UserName, targetUrl, retry,fs, httpMethod, sTime, eTime;
+		String UserName, targetUrl, retry,fs, httpMethod, sTime, eTime,filePath = "./PacketLog/";
 		String packetInfo[] = new String[3];
 		File fname;
 		int lineNum, httpLineNum, minS, minE, printLineNum,logTime;
 		boolean bTargetUrl,bUserName,bHttpMethod,bOutput;
-		final String version = "1.06.0(b04)";
+		final String version = "1.06.0(b05)";
 		ArrayList<String> httplogArr = new ArrayList<String>();
 		ArrayList<ArrayList<String>> httplog = new ArrayList<ArrayList<String>>();
+
+		if(args.length != 0){
+			for(int i=0;i<args.length;i++){
+				if(args[i].contains("filePath=")){
+					filePath = args[i].split("=",1)[1];
+				}
+			}
+		}
+
 
 		while (true) {
 			cslClear();
@@ -29,9 +38,15 @@ public class vpnPacketLogAnalyzerBeta {
 			System.out.printf("%5s%20s %s\n\n","A", "Version",version);
 
 			while (true) {
-				File list = new File("./PacketLog/");
+				File list = new File(filePath);
 				File files[] = list.listFiles();
-				Arrays.sort(files);
+				try{
+					Arrays.sort(files);
+				}catch(NullPointerException e){
+					System.out.println("ファイルが存在しない、ファイルへのアクセス権限がないなどの理由で読み込み失敗しました。\nプログラムを終了します。");
+					System.exit(1);
+				}
+
 				for (int i = files.length-1; i >=0 ; i--) {
 					System.out.printf("%3d | %30s | %4.3fMB\n", files.length - i, files[i], files[i].length() / 1024.0 / 1024.0);
 				}
