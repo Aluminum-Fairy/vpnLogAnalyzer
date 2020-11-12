@@ -17,7 +17,7 @@ public class vpnPacketLogAnalyzerBeta {
 		File fname;
 		int lineNum, httpLineNum, minS, minE, printLineNum,logTime;
 		boolean bTargetUrl,bUserName,bHttpMethod,bOutput;
-		final String version = "1.06.0(b03)";
+		final String version = "1.06.0(b04)";
 		ArrayList<String> httplogArr = new ArrayList<String>();
 		ArrayList<ArrayList<String>> httplog = new ArrayList<ArrayList<String>>();
 
