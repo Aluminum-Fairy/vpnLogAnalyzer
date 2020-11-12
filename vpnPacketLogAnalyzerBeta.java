@@ -46,7 +46,7 @@ public class vpnPacketLogAnalyzerBeta {
 				}
 
 				for (int i = files.length-1; i >=0 ; i--) {
-					System.out.printf("%3d | %30s | %4.3fMB\n", files.length - i, files[i], files[i].length() / 1024.0 / 1024.0);
+					System.out.printf("%3d | %30s | %.3fMB\n", files.length - i, files[i], files[i].length() / 1024.0 / 1024.0);
 				}
 				try {
 					fname = files[files.length - inputNumData("ファイルを選択(番号)")];
@@ -213,7 +213,11 @@ public class vpnPacketLogAnalyzerBeta {
 								printLineNum++;
 					}
 				}
+<<<<<<< HEAD
 				System.out.printf("\n%8d / %8d ( %4f %%)\n\n", printLineNum, httpLineNum,(float)printLineNum / httpLineNum*100.0);
+=======
+				System.out.printf("\n%8d / %8d (%3f %%)\n\n", printLineNum, httpLineNum,(float)printLineNum/httpLineNum*100.0);
+>>>>>>> 7676f2f4e69c4f36bb9211f4ed5ecf7ddb8a1813
 
 				while (true) {
 					retry = inputStrData("検索条件を指定し直しますか(y/n)");
