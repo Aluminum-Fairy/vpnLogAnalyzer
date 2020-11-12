@@ -213,11 +213,7 @@ public class vpnPacketLogAnalyzer {
 								printLineNum++;
 					}
 				}
-<<<<<<< HEAD
-				System.out.printf("\n%8d / %8d ( %4f %%)\n\n", printLineNum, httpLineNum,(float)printLineNum / httpLineNum*100.0);
-=======
 				System.out.printf("\n%8d / %8d (%3f %%)\n\n", printLineNum, httpLineNum,(float)printLineNum/httpLineNum*100.0);
->>>>>>> 7676f2f4e69c4f36bb9211f4ed5ecf7ddb8a1813
 
 				while (true) {
 					retry = inputStrData("検索条件を指定し直しますか(y/n)");
