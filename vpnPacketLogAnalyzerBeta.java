@@ -21,11 +21,9 @@ public class vpnPacketLogAnalyzerBeta {
 		ArrayList<String> httplogArr = new ArrayList<String>();
 		ArrayList<ArrayList<String>> httplog = new ArrayList<ArrayList<String>>();
 
-		if(args.length != 0){
-			for(int i=0;i<args.length;i++){
-				if(args[i].contains("filePath=")){
-					filePath = args[i].split("=",1)[1];
-				}
+		for(int i=0;i<args.length;i++){
+			if(args[i].contains("filePath=")){
+				filePath = args[i].split("=",2)[1];
 			}
 		}
 
