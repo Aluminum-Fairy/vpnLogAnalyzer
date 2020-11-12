@@ -16,7 +16,7 @@ public class vpnPacketLogAnalyzerBeta {
 		String packetInfo[] = new String[3];
 		File fname;
 		int lineNum, httpLineNum, minS, minE, printLineNum,logTime;
-		boolean bTargetUrl,bUserName,bHttpMethod;
+		boolean bTargetUrl,bUserName,bHttpMethod,bOutput;
 		final String version = "1.06.0(b01)";
 		ArrayList<String> httplogArr = new ArrayList<String>();
 		ArrayList<ArrayList<String>> httplog = new ArrayList<ArrayList<String>>();
@@ -167,6 +167,14 @@ public class vpnPacketLogAnalyzerBeta {
 					System.out.println("時間指定をやり直してください");
 				}
 
+				while (true) {
+					retry = inputStrData("出力しますか(y/n)");
+					if (retry.contains("y") || retry.contains("n")) {
+						break;
+					}
+				}
+				bOutput = retry == "y";
+
 				printLineNum = 0;
 				System.out.printf("\n\n%9s | %15s | %11s | %s\n", "Time", "UserName", "Type", "ConnectionPoint");
 				for (int i = 0; i < httplog.size(); i++) {
@@ -180,12 +188,14 @@ public class vpnPacketLogAnalyzerBeta {
 							&& minS <= logTime
 							&& minE >= logTime) {
 
-						System.out.printf("%9s | %15s | %11s | %s\n",
-								httplogArr.get(urlC.time).split(Pattern.quote("."), 0)[0],
-								httplogArr.get(urlC.User).split("-", 0)[1],
-								packetInfo[1].split("=", 0)[1],
-								packetInfo[2].split("=", 2)[1]);
-						printLineNum++;
+								if(bOutput){
+									System.out.printf("%9s | %15s | %11s | %s\n",
+											httplogArr.get(urlC.time).split(Pattern.quote("."), 0)[0],
+											httplogArr.get(urlC.User).split("-", 0)[1],
+											packetInfo[1].split("=", 0)[1],
+											packetInfo[2].split("=", 2)[1]);
+								}
+								printLineNum++;
 					}
 				}
 				System.out.printf("\n%8d / %8d\n\n", printLineNum, httpLineNum);
