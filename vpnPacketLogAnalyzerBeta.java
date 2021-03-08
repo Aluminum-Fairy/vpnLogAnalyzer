@@ -1,11 +1,35 @@
 import java.io.*;
 import java.text.DecimalFormat;
+import java.util.Collections;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
 import logConst.urlConst;
+
+class userList{
+	private String name;
+	private long count;
+
+	public void addName(String insertName){
+		this.name = insertName;
+		this.count =0;
+	}
+
+	public void addCount(){
+		this.count++;
+	}
+
+	public String getName(){
+		return this.name;
+	}
+
+	public long getCount(){
+		return this.count;
+	}
+}
 
 public class vpnPacketLogAnalyzerBeta {
 	public static void main(String[] args) {
@@ -21,7 +45,7 @@ public class vpnPacketLogAnalyzerBeta {
 		final String version = "1.07.0(b01)";
 		ArrayList<String> httplogArr = new ArrayList<String>();
 		ArrayList<ArrayList<String>> httplog = new ArrayList<ArrayList<String>>();
-		ArrayList<String> userArr = new ArrayList<String>();
+		ArrayList<userList> userArr = new ArrayList<userList>();
 
 
 		for (int i = 0; i < args.length; i++) {
@@ -137,17 +161,34 @@ public class vpnPacketLogAnalyzerBeta {
 			fname = null;
 			logtmp = null;
 
-			System.out.println("完了\nユーザー一覧を作成しています...");
+			System.out.print("完了\nユーザー一覧を作成しています...");
+
+			boolean userExt;
+			String userName;
 			for(int i=0;i<httplog.size();i++){
-				if(!userArr.contains(httplog.get(i).get(urlC.User))){
-					userArr.add(httplog.get(i).get(urlC.User));
+				userExt=false;
+				userList userL = new userList();
+				userName=httplog.get(i).get(urlC.User).split("-", 0)[1];
+				for(int j=0;j<userArr.size();j++){
+					if(userArr.get(j).getName().equals(userName)){
+						userArr.get(j).addCount();
+						userExt=true;
+						break;
+					}
 				}
+				if (!userExt) {
+					userL.addName(userName);
+					userArr.add(userL);
+				}
+
 			}
+			userArr.sort(Comparator.comparing(userList::getCount).reversed());
 
-			System.out.printf("完了\n%10s:%8d\n%8s:%8d\n", "ログ行数", lineNum, "検索対象行数", httpLineNum);
+			System.out.printf("完了\n\n%10s:%8d\n%8s:%8d\n\n", "ログ行数", lineNum, "検索対象行数", httpLineNum);
 
+			System.out.printf("%8s|%8s", "名前", "アクセス数\n");
 			for(int i=0;i<userArr.size();i++){
-				System.out.println(userArr.get(i));
+				System.out.printf("%10s|%8d\n",userArr.get(i).getName(),userArr.get(i).getCount());
 			}
 
 			while (true) {
