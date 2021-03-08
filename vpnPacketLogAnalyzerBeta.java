@@ -12,48 +12,54 @@ public class vpnPacketLogAnalyzerBeta {
 
 		urlConst urlC = new urlConst();
 
-		String UserName, targetUrl, retry,fs, httpMethod, sTime, eTime,filePath = "./PacketLog/";
+		String UserName, targetUrl, retry, fs, httpMethod, sTime, eTime, filePath = "/usr/local/vpnserver/packet_log/Main1";
 		String packetInfo[] = new String[3];
 		File fname;
-		int lineNum, httpLineNum, minS, minE, printLineNum,logTime;
-		boolean bTargetUrl,bUserName,bHttpMethod,bOutput;
-		final String version = "1.06.0(b05)";
+		int lineNum, httpLineNum, minS, minE, printLineNum, logTime;
+		double allFileSize,fileSize;
+		boolean bTargetUrl, bUserName, bHttpMethod, bOutput;
+		final String version = "1.07.0(b01)";
 		ArrayList<String> httplogArr = new ArrayList<String>();
 		ArrayList<ArrayList<String>> httplog = new ArrayList<ArrayList<String>>();
+		ArrayList<String> userArr = new ArrayList<String>();
 
-		for(int i=0;i<args.length;i++){
-			if(args[i].contains("filePath=")){
-				filePath = args[i].split("=",2)[1];
+
+		for (int i = 0; i < args.length; i++) {
+			if (args[i].contains("filePath=")) {
+				filePath = args[i].split("=", 2)[1];
 			}
 		}
-
 
 		while (true) {
 			cslClear();
 			System.out.printf("%5s+-----------------------------------------+\n", "B");
 			System.out.printf("%5s|   SoftEther VPN Log Analyzer JAVA Ver   |\n", "E");
 			System.out.printf("%5s+-----------------------------------------+\n", "T");
-			System.out.printf("%5s%20s %s\n\n","A", "Version",version);
+			System.out.printf("%5s%20s %s\n\n", "A", "Version", version);
 
 			while (true) {
 				File list = new File(filePath);
 				File files[] = list.listFiles();
-				try{
+				try {
 					Arrays.sort(files);
-				}catch(NullPointerException e){
+				} catch (NullPointerException e) {
 					System.out.println("ファイルが存在しない、ファイルへのアクセス権限がないなどの理由で読み込み失敗しました。\nプログラムを終了します。");
 					System.exit(1);
 				}
-
-				for (int i = files.length-1; i >=0 ; i--) {
-					System.out.printf("%3d | %30s | %.3fMB\n", files.length - i, files[i], files[i].length() / 1024.0 / 1024.0);
+				allFileSize = 0;
+				for (int i = files.length - 1; i >= 0; i--) {
+					fileSize = files[i].length() / 1024.0 / 1024.0;
+					allFileSize += fileSize;
+					System.out.printf("%3d | %30s | %3d.%1d MB\n", files.length - i, files[i],
+							(int) fileSize, (int) (fileSize % 1 * 10));
 				}
+				System.out.printf("\n%5s総ファイル容量: %.2f MB\n\n", "", allFileSize);
 				try {
 					fname = files[files.length - inputNumData("ファイルを選択(番号)")];
 					break;
 				} catch (ArrayIndexOutOfBoundsException e) {
 					cslClear();
-					System.out.println("ファイルのロードに失敗しました");
+					System.out.println("ファイルのロードに失敗しました\n");
 				}
 				files = null;
 			}
@@ -91,17 +97,17 @@ public class vpnPacketLogAnalyzerBeta {
 				}
 			} catch (Exception e) {
 				System.out.println("ロードに失敗しました:" + e);
-				fs="";
+				fs = "";
 				System.exit(1);
-			} catch (OutOfMemoryError e){
+			} catch (OutOfMemoryError e) {
 				System.out.print("失敗\nメモリ不足です。低速で読み込みます。\nロード, 展開中...");
 				fs = "";
-				try{
+				try {
 					FileReader filereader = new FileReader(fname);
 					BufferedReader fileb = new BufferedReader(filereader);
 					String fline;
-					try{
-						while (( fline= fileb.readLine()) != null){
+					try {
+						while ((fline = fileb.readLine()) != null) {
 							if (fline.contains("HttpUrl")) {
 								ArrayList<String> loglinetmp = new ArrayList<String>();
 								logtmp = fline.split(",", 0);
@@ -114,14 +120,15 @@ public class vpnPacketLogAnalyzerBeta {
 							lineNum++;
 						}
 						filereader.close();
-					}catch (IOException eee){
+					} catch (IOException eee) {
 						System.out.println(eee);
 					}
 
-				}catch(FileNotFoundException ee){
+				} catch (FileNotFoundException ee) {
 					System.out.println("ロードに失敗しました:" + e);
 				} catch (OutOfMemoryError ee) {
 					System.out.println("失敗\nメモリ不足です。プログラムを終了します。");
+					httplog.clear();
 					System.out.println(getMemoryInfo());
 					System.exit(1);
 				}
@@ -130,34 +137,45 @@ public class vpnPacketLogAnalyzerBeta {
 			fname = null;
 			logtmp = null;
 
+			System.out.println("完了\nユーザー一覧を作成しています...");
+			for(int i=0;i<httplog.size();i++){
+				if(!userArr.contains(httplog.get(i).get(urlC.User))){
+					userArr.add(httplog.get(i).get(urlC.User));
+				}
+			}
+
 			System.out.printf("完了\n%10s:%8d\n%8s:%8d\n", "ログ行数", lineNum, "検索対象行数", httpLineNum);
+
+			for(int i=0;i<userArr.size();i++){
+				System.out.println(userArr.get(i));
+			}
 
 			while (true) {
 				UserName = inputStrData("\n検索対象ユーザー名");
-				if(UserName != ""){
-					bUserName = !UserName.substring(0,1).contains("!");
-					if(!bUserName){
+				if (UserName != "") {
+					bUserName = !UserName.substring(0, 1).contains("!");
+					if (!bUserName) {
 						UserName = UserName.substring(1);
 					}
-				}else{
+				} else {
 					bUserName = true;
 				}
 				targetUrl = inputStrData("検索対象URL");
-				if(targetUrl !=""){
+				if (targetUrl != "") {
 					bTargetUrl = !targetUrl.substring(0, 1).contains("!");
-					if(!bTargetUrl){
+					if (!bTargetUrl) {
 						targetUrl = targetUrl.substring(1);
 					}
-				}else{
+				} else {
 					bTargetUrl = true;
 				}
 				httpMethod = inputStrData("Connection Type");
-				if(httpMethod !=""){
-					bHttpMethod = !httpMethod.substring(0,1).contains("!");
-					if(!bHttpMethod){
+				if (httpMethod != "") {
+					bHttpMethod = !httpMethod.substring(0, 1).contains("!");
+					if (!bHttpMethod) {
 						httpMethod = httpMethod.substring(1);
 					}
-				}else{
+				} else {
 					bHttpMethod = true;
 				}
 
@@ -189,35 +207,30 @@ public class vpnPacketLogAnalyzerBeta {
 				bOutput = retry.equals("y");
 
 				printLineNum = 0;
-				if(bOutput){
+				if (bOutput) {
 					System.out.printf("\n\n%9s | %15s | %11s | %s\n", "Time", "UserName", "Type", "ConnectionPoint");
 				}
 				for (int i = 0; i < httplog.size(); i++) {
 					httplogArr = httplog.get(i);
 					packetInfo = httplogArr.get(urlC.pakcetInfo).split(" ", 0);
-					logTime =  	Integer.parseInt(httplogArr.get(urlC.time).split(":", 0)[0]) * 60+
-								Integer.parseInt(httplogArr.get(urlC.time).split(":", 0)[1]);
+					logTime = Integer.parseInt(httplogArr.get(urlC.time).split(":", 0)[0]) * 60
+							+ Integer.parseInt(httplogArr.get(urlC.time).split(":", 0)[1]);
 					if ((bUserName == httplogArr.get(urlC.User).contains(UserName) || UserName == "")
 							&& (bHttpMethod == packetInfo[1].contains(httpMethod) || httpMethod == "")
-							&& (bTargetUrl == packetInfo[2].contains(targetUrl) || targetUrl == "")
-							&& minS <= logTime
+							&& (bTargetUrl == packetInfo[2].contains(targetUrl) || targetUrl == "") && minS <= logTime
 							&& minE >= logTime) {
 
-								if(bOutput){
-									System.out.printf("%9s | %15s | %11s | %s\n",
-											httplogArr.get(urlC.time).split(Pattern.quote("."), 0)[0],
-											httplogArr.get(urlC.User).split("-", 0)[1],
-											packetInfo[1].split("=", 0)[1],
-											packetInfo[2].split("=", 2)[1]);
-								}
-								printLineNum++;
+						if (bOutput) {
+							System.out.printf("%9s | %15s | %11s | %s\n",
+									httplogArr.get(urlC.time).split(Pattern.quote("."), 0)[0],
+									httplogArr.get(urlC.User).split("-", 0)[1], packetInfo[1].split("=", 0)[1],
+									packetInfo[2].split("=", 2)[1]);
+						}
+						printLineNum++;
 					}
 				}
-<<<<<<< HEAD
-				System.out.printf("\n%8d / %8d ( %4f %%)\n\n", printLineNum, httpLineNum,(float)printLineNum / httpLineNum*100.0);
-=======
-				System.out.printf("\n%8d / %8d (%3f %%)\n\n", printLineNum, httpLineNum,(float)printLineNum/httpLineNum*100.0);
->>>>>>> 7676f2f4e69c4f36bb9211f4ed5ecf7ddb8a1813
+				System.out.printf("\n%8d / %8d (%3f %%)\n\n", printLineNum, httpLineNum,
+						(float) printLineNum / httpLineNum * 100.0);
 
 				while (true) {
 					retry = inputStrData("検索条件を指定し直しますか(y/n)");
@@ -257,7 +270,7 @@ public class vpnPacketLogAnalyzerBeta {
 		if (input == -2) {
 			cslClear();
 			System.exit(0);
-		}else if(input == -3){
+		} else if (input == -3) {
 			System.out.println(getMemoryInfo());
 			return inputNumData(msg);
 		}
@@ -280,10 +293,10 @@ public class vpnPacketLogAnalyzerBeta {
 		if (input.equals("-2")) {
 			cslClear();
 			System.exit(0);
-		}else if(input.equals("-3")){
+		} else if (input.equals("-3")) {
 			System.out.println(getMemoryInfo());
 			return inputStrData(msg);
-		}else if(input.equals("")){
+		} else if (input.equals("")) {
 			return "";
 		}
 		return input;
@@ -301,11 +314,9 @@ public class vpnPacketLogAnalyzerBeta {
 		long total = Runtime.getRuntime().totalMemory() / 1024;
 		long max = Runtime.getRuntime().maxMemory() / 1024;
 		long used = total - free;
-		double ratio = (used * 100 / (double)total);
-		String info =
-		"Java メモリ情報 : 合計=" + f1.format(total) + "、" +
-		"使用量=" + f1.format(used) + " (" + f2.format(ratio) + "%)、" +
-		"使用可能最大="+f1.format(max);
+		double ratio = (used * 100 / (double) total);
+		String info = "Java メモリ情報 : 合計=" + f1.format(total) + "、" + "使用量=" + f1.format(used) + " (" + f2.format(ratio)
+				+ "%)、" + "使用可能最大=" + f1.format(max);
 		return info;
 	}
 
