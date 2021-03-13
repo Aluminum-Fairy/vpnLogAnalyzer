@@ -50,6 +50,10 @@ class addressList{
 	public long getCount(){
 		return this.count;
 	}
+
+	public int getAddrLength(){
+		return this.address.length();
+	}
 }
 
 public class vpnPacketLogAnalyzerBeta {
@@ -227,18 +231,24 @@ public class vpnPacketLogAnalyzerBeta {
 
 			}
 			addressArr.sort(Comparator.comparing(addressList::getCount).reversed());
+			int maxLength = 0;
+			for (int i = 0; i < addressArr.size() && i < 10; i++) {
+				if (maxLength < addressArr.get(i).getAddrLength()) {
+					maxLength = addressArr.get(i).getAddrLength();
+				}
+			}
 
 			System.out.printf("完了\n\n%10s:%8d\n%8s:%8d\n", "ログ行数", lineNum, "検索対象行数", httpLineNum);
 
 			while (true) {
-				System.out.printf("\n%30s |%8s", "userName", "アクセス数\n");
+				System.out.printf("\n%" + maxLength+ "s |%8s", "userName", "アクセス数\n");
 				for (int i = 0; i < userArr.size(); i++) {
-					System.out.printf("%30s |%8d\n", userArr.get(i).getName(), userArr.get(i).getCount());
+					System.out.printf("%" + maxLength + "s |%8d\n", userArr.get(i).getName(), userArr.get(i).getCount());
 				}
 
-				System.out.printf("\n%30s |%8s", "Address", "アクセス数\n");
+				System.out.printf("\n%"+maxLength+"s |%8s", "Address", "アクセス数\n");
 				for (int i = 0; i < addressArr.size() && i<10; i++) {
-					System.out.printf("%30s |%8d\n", addressArr.get(i).getAddress(), addressArr.get(i).getCount());
+					System.out.printf("%" + -maxLength+ "s |%8d\n", addressArr.get(i).getAddress(), addressArr.get(i).getCount());
 				}
 
 				UserName = inputStrData("\n検索対象ユーザー名");
@@ -334,8 +344,11 @@ public class vpnPacketLogAnalyzerBeta {
 					targetUrl = null;
 					httpMethod = null;
 					retry = null;
+					addressArr.clear();
+					userArr.clear();
 					httplogArr.clear();
 					httplog.clear();
+					maxLength=0;
 					break;
 				}
 
