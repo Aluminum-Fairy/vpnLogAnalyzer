@@ -2,25 +2,78 @@ import java.io.*;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
 import logConst.urlConst;
 
-public class vpnPacketLogAnalyzerBeta {
+class userList {
+	private String name;
+	private long count;
+
+	public void addName(String insertName) {
+		this.name = insertName;
+		this.count = 1;
+	}
+
+	public void addCount() {
+		this.count++;
+	}
+
+	public String getName() {
+		return this.name;
+	}
+
+	public long getCount() {
+		return this.count;
+	}
+}
+
+class addressList {
+	private String address;
+	private long count;
+
+	public void addAddress(String insertAddress) {
+		this.address = insertAddress.split("://")[1].split("/")[0];
+		this.count = 1;
+	}
+
+	public void addCount() {
+		this.count++;
+	}
+
+	public String getAddress() {
+		return this.address;
+	}
+
+	public long getCount() {
+		return this.count;
+	}
+
+	public int getAddrLength() {
+		return this.address.length();
+	}
+}
+
+public class vpnPacketLogAnalyzer {
 	public static void main(String[] args) {
+
+		final String version = "1.07.0";
 
 		urlConst urlC = new urlConst();
 
-		String UserName, targetUrl, retry, fs, httpMethod, sTime, eTime, filePath = "./PacketLog/";
+		String UserName, targetUrl, retry, fs, httpMethod, sTime, eTime,
+				filePath = "/usr/local/vpnserver/packet_log/Main1";
 		String packetInfo[] = new String[3];
 		File fname;
 		int lineNum, httpLineNum, minS, minE, printLineNum, logTime;
-		double fileSize = 0;
+		double allFileSize, fileSize;
 		boolean bTargetUrl, bUserName, bHttpMethod, bOutput;
-		final String version = "1.07.0(b00)";
 		ArrayList<String> httplogArr = new ArrayList<String>();
 		ArrayList<ArrayList<String>> httplog = new ArrayList<ArrayList<String>>();
+		ArrayList<userList> userArr = new ArrayList<userList>();
+		ArrayList<addressList> addressArr = new ArrayList<addressList>();
 
 		for (int i = 0; i < args.length; i++) {
 			if (args[i].contains("filePath=")) {
@@ -44,19 +97,20 @@ public class vpnPacketLogAnalyzerBeta {
 					System.out.println("ファイルが存在しない、ファイルへのアクセス権限がないなどの理由で読み込み失敗しました。\nプログラムを終了します。");
 					System.exit(1);
 				}
-				fileSize = 0;
+				allFileSize = 0;
 				for (int i = files.length - 1; i >= 0; i--) {
-					fileSize += files[i].length() / 1024.0 / 1024.0;
-					System.out.printf("%3d | %30s | %.3fMB\n", files.length - i, files[i],
-							files[i].length() / 1024.0 / 1024.0);
+					fileSize = files[i].length() / 1024.0 / 1024.0;
+					allFileSize += fileSize;
+					System.out.printf("%3d | %30s | %3d.%1d MB\n", files.length - i, files[i], (int) fileSize,
+							(int) (fileSize % 1 * 10));
 				}
-				System.out.printf("\n%5s総ファイル容量: %.2f MB\n\n", "",fileSize);
+				System.out.printf("\n%5s総ファイル容量: %.2f MB\n\n", "", allFileSize);
 				try {
 					fname = files[files.length - inputNumData("ファイルを選択(番号)")];
 					break;
 				} catch (ArrayIndexOutOfBoundsException e) {
 					cslClear();
-					System.out.println("ファイルのロードに失敗しました");
+					System.out.println("ファイルのロードに失敗しました\n");
 				}
 				files = null;
 			}
@@ -94,11 +148,9 @@ public class vpnPacketLogAnalyzerBeta {
 				}
 			} catch (Exception e) {
 				System.out.println("ロードに失敗しました:" + e);
-				fs = "";
 				System.exit(1);
 			} catch (OutOfMemoryError e) {
 				System.out.print("失敗\nメモリ不足です。低速で読み込みます。\nロード, 展開中...");
-				fs = "";
 				try {
 					FileReader filereader = new FileReader(fname);
 					BufferedReader fileb = new BufferedReader(filereader);
@@ -125,6 +177,7 @@ public class vpnPacketLogAnalyzerBeta {
 					System.out.println("ロードに失敗しました:" + e);
 				} catch (OutOfMemoryError ee) {
 					System.out.println("失敗\nメモリ不足です。プログラムを終了します。");
+					httplog.clear();
 					System.out.println(getMemoryInfo());
 					System.exit(1);
 				}
@@ -133,9 +186,73 @@ public class vpnPacketLogAnalyzerBeta {
 			fname = null;
 			logtmp = null;
 
-			System.out.printf("完了\n%10s:%8d\n%8s:%8d\n", "ログ行数", lineNum, "検索対象行数", httpLineNum);
+			System.out.print("完了\nユーザーリストを作成しています...");
+
+			boolean userExt;
+			String userName;
+			for (int i = 0; i < httplog.size(); i++) {
+				userExt = false;
+				userList userL = new userList();
+				userName = httplog.get(i).get(urlC.User).split("-", 0)[1];
+				for (int j = 0; j < userArr.size(); j++) {
+					if (userArr.get(j).getName().equals(userName)) {
+						userArr.get(j).addCount();
+						userExt = true;
+						break;
+					}
+				}
+				if (!userExt) {
+					userL.addName(userName);
+					userArr.add(userL);
+				}
+
+			}
+			userArr.sort(Comparator.comparing(userList::getCount).reversed());
+
+			System.out.print("完了\nアクセスリストを作成しています...");
+
+			boolean addressExt;
+			String address;
+			for (int i = 0; i < httplog.size(); i++) {
+				addressExt = false;
+				addressList addrL = new addressList();
+				address = httplog.get(i).get(urlC.pakcetInfo).split(" ", 0)[2].split("=", 2)[1];
+				for (int j = 0; j < addressArr.size(); j++) {
+					if (address.contains(addressArr.get(j).getAddress())) {
+						addressArr.get(j).addCount();
+						addressExt = true;
+						break;
+					}
+				}
+				if (!addressExt) {
+					addrL.addAddress(address);
+					addressArr.add(addrL);
+				}
+
+			}
+			addressArr.sort(Comparator.comparing(addressList::getCount).reversed());
+			int maxLength = 0;
+			for (int i = 0; i < addressArr.size() && i < 10; i++) {
+				if (maxLength < addressArr.get(i).getAddrLength()) {
+					maxLength = addressArr.get(i).getAddrLength();
+				}
+			}
+
+			System.out.printf("完了\n\n%10s:%8d\n%8s:%8d\n", "ログ行数", lineNum, "検索対象行数", httpLineNum);
 
 			while (true) {
+				System.out.printf("\n%" + maxLength + "s |%8s", "userName", "アクセス数\n");
+				for (int i = 0; i < userArr.size(); i++) {
+					System.out.printf("%" + maxLength + "s |%8d\n", userArr.get(i).getName(),
+							userArr.get(i).getCount());
+				}
+
+				System.out.printf("\n%" + maxLength + "s |%8s", "Address", "アクセス数\n");
+				for (int i = 0; i < addressArr.size() && i < 10; i++) {
+					System.out.printf("%" + -maxLength + "s |%8d\n", addressArr.get(i).getAddress(),
+							addressArr.get(i).getCount());
+				}
+
 				UserName = inputStrData("\n検索対象ユーザー名");
 				if (UserName != "") {
 					bUserName = !UserName.substring(0, 1).contains("!");
@@ -229,8 +346,11 @@ public class vpnPacketLogAnalyzerBeta {
 					targetUrl = null;
 					httpMethod = null;
 					retry = null;
+					addressArr.clear();
+					userArr.clear();
 					httplogArr.clear();
 					httplog.clear();
+					maxLength = 0;
 					break;
 				}
 
