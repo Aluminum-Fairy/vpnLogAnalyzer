@@ -1,6 +1,5 @@
 import java.io.*;
 import java.text.DecimalFormat;
-import java.util.Collections;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -15,7 +14,7 @@ class userList{
 
 	public void addName(String insertName){
 		this.name = insertName;
-		this.count =0;
+		this.count =1;
 	}
 
 	public void addCount(){
@@ -31,8 +30,32 @@ class userList{
 	}
 }
 
+class addressList{
+	private String address;
+	private long count;
+
+	public void addAddress(String insertAddress){
+		this.address = insertAddress.split("://")[1].split("/")[0];
+		this.count =1;
+	}
+
+	public void addCount(){
+		this.count++;
+	}
+
+	public String getAddress(){
+		return this.address;
+	}
+
+	public long getCount(){
+		return this.count;
+	}
+}
+
 public class vpnPacketLogAnalyzerBeta {
 	public static void main(String[] args) {
+
+		final String version = "1.07.0(b01)";
 
 		urlConst urlC = new urlConst();
 
@@ -42,10 +65,10 @@ public class vpnPacketLogAnalyzerBeta {
 		int lineNum, httpLineNum, minS, minE, printLineNum, logTime;
 		double allFileSize,fileSize;
 		boolean bTargetUrl, bUserName, bHttpMethod, bOutput;
-		final String version = "1.07.0(b01)";
 		ArrayList<String> httplogArr = new ArrayList<String>();
 		ArrayList<ArrayList<String>> httplog = new ArrayList<ArrayList<String>>();
 		ArrayList<userList> userArr = new ArrayList<userList>();
+		ArrayList<addressList> addressArr = new ArrayList<addressList>();
 
 
 		for (int i = 0; i < args.length; i++) {
@@ -121,11 +144,9 @@ public class vpnPacketLogAnalyzerBeta {
 				}
 			} catch (Exception e) {
 				System.out.println("ロードに失敗しました:" + e);
-				fs = "";
 				System.exit(1);
 			} catch (OutOfMemoryError e) {
 				System.out.print("失敗\nメモリ不足です。低速で読み込みます。\nロード, 展開中...");
-				fs = "";
 				try {
 					FileReader filereader = new FileReader(fname);
 					BufferedReader fileb = new BufferedReader(filereader);
@@ -161,7 +182,7 @@ public class vpnPacketLogAnalyzerBeta {
 			fname = null;
 			logtmp = null;
 
-			System.out.print("完了\nユーザー一覧を作成しています...");
+			System.out.print("完了\nユーザーリストを作成しています...");
 
 			boolean userExt;
 			String userName;
@@ -184,14 +205,42 @@ public class vpnPacketLogAnalyzerBeta {
 			}
 			userArr.sort(Comparator.comparing(userList::getCount).reversed());
 
-			System.out.printf("完了\n\n%10s:%8d\n%8s:%8d\n\n", "ログ行数", lineNum, "検索対象行数", httpLineNum);
+			System.out.print("完了\nアクセスリストを作成しています...");
 
-			System.out.printf("%8s|%8s", "名前", "アクセス数\n");
-			for(int i=0;i<userArr.size();i++){
-				System.out.printf("%10s|%8d\n",userArr.get(i).getName(),userArr.get(i).getCount());
+			boolean addressExt;
+			String address;
+			for (int i = 0; i < httplog.size(); i++) {
+				addressExt = false;
+				addressList addrL = new addressList();
+				address = httplog.get(i).get(urlC.pakcetInfo).split(" ",0)[2].split("=",2)[1];
+				for (int j = 0; j < addressArr.size(); j++) {
+					if (address.contains(addressArr.get(j).getAddress())) {
+						addressArr.get(j).addCount();
+						addressExt = true;
+						break;
+					}
+				}
+				if (!addressExt) {
+					addrL.addAddress(address);
+					addressArr.add(addrL);
+				}
+
 			}
+			addressArr.sort(Comparator.comparing(addressList::getCount).reversed());
+
+			System.out.printf("完了\n\n%10s:%8d\n%8s:%8d\n", "ログ行数", lineNum, "検索対象行数", httpLineNum);
 
 			while (true) {
+				System.out.printf("\n%30s |%8s", "userName", "アクセス数\n");
+				for (int i = 0; i < userArr.size(); i++) {
+					System.out.printf("%30s |%8d\n", userArr.get(i).getName(), userArr.get(i).getCount());
+				}
+
+				System.out.printf("\n%30s |%8s", "Address", "アクセス数\n");
+				for (int i = 0; i < addressArr.size() && i<10; i++) {
+					System.out.printf("%30s |%8d\n", addressArr.get(i).getAddress(), addressArr.get(i).getCount());
+				}
+
 				UserName = inputStrData("\n検索対象ユーザー名");
 				if (UserName != "") {
 					bUserName = !UserName.substring(0, 1).contains("!");
