@@ -59,11 +59,14 @@ class addressList {
 }
 
 class ipAddressList {
-	private int[] ip = new int[4];
+	private byte[] ip = new byte[4];
 	private long count;
 
 	public void addAddress(String insertIP) {
-		this.ip = Stream.of(insertIP.split(Pattern.quote("."))).mapToInt(Integer::parseInt).toArray();
+		int [] ip = Stream.of(insertIP.split(Pattern.quote("."))).mapToInt(Integer::parseInt).toArray();
+		for(int i=0;i < 4 ;i++){
+			this.ip[i] = (byte)(ip[i]-128);
+		}
 		this.count = 1;
 	}
 
@@ -72,7 +75,11 @@ class ipAddressList {
 	}
 
 	public int[] getIp() {
-		return this.ip;
+		int ip[] = new int[4];
+		for(int i=0;i<4;i++){
+			ip[i] = (this.ip[i] + 128) & 0xFF;
+		}
+		return ip;
 	}
 
 	public long getCount() {
@@ -83,7 +90,7 @@ class ipAddressList {
 public class vpnPacketLogAnalyzer {
 	public static void main(String[] args) {
 
-		final String version = "1.07.0";
+		final String version = "1.08.0";
 
 		urlConst urlC = new urlConst();
 
