@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Scanner;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import logConst.urlConst;
 
@@ -54,6 +55,29 @@ class addressList {
 	public int getAddrLength() {
 		return this.address.length();
 	}
+
+}
+
+class ipAddressList {
+	private int[] ip = new int[4];
+	private long count;
+
+	public void addAddress(String insertIP) {
+		this.ip = Stream.of(insertIP.split(Pattern.quote("."))).mapToInt(Integer::parseInt).toArray();
+		this.count = 1;
+	}
+
+	public void addCount() {
+		this.count++;
+	}
+
+	public int[] getIp() {
+		return this.ip;
+	}
+
+	public long getCount() {
+		return this.count;
+	}
 }
 
 public class vpnPacketLogAnalyzer {
@@ -63,17 +87,18 @@ public class vpnPacketLogAnalyzer {
 
 		urlConst urlC = new urlConst();
 
-		String userName, targetUrl, retry="noInput", fs, httpMethod, searchTimeS, searchTimeE,
+		String userName, targetUrl, retry = "noInput", fs, httpMethod, searchTimeS, searchTimeE,
 				filePath = "/usr/local/vpnserver/packet_log/Main1";
 		String packetInfo[] = new String[3];
 		File fname;
-		int fileLine, httpLine, timeS, timeE, logLine, logTime,maxLength;
+		int fileLine, httpLine, timeS, timeE, logLine, logTime, maxLength;
 		double allFileSize, fileSize;
-		boolean bTargetUrl, bUserName, bHttpMethod, bOutput,askSearch;
+		boolean bTargetUrl, bUserName, bHttpMethod, bOutput, askSearch;
 		ArrayList<String> httplogArr = new ArrayList<String>();
 		ArrayList<ArrayList<String>> httplog = new ArrayList<ArrayList<String>>();
 		ArrayList<userList> userArr = new ArrayList<userList>();
 		ArrayList<addressList> addressArr = new ArrayList<addressList>();
+		ArrayList<ipAddressList> ipAddressArr = new ArrayList<ipAddressList>();
 
 		for (int i = 0; i < args.length; i++) {
 			if (args[i].contains("filePath=")) {
@@ -98,7 +123,7 @@ public class vpnPacketLogAnalyzer {
 					System.exit(1);
 				}
 				allFileSize = 0;
-				maxLength=20;
+				maxLength = 20;
 				for (int i = files.length - 1; i >= 0; i--) {
 					if (maxLength < files[i].getName().length()) {
 						maxLength = files[i].getName().length();
@@ -108,8 +133,8 @@ public class vpnPacketLogAnalyzer {
 				for (int i = files.length - 1; i >= 0; i--) {
 					fileSize = files[i].length() / 1024.0 / 1024.0;
 					allFileSize += fileSize;
-					System.out.printf("%3d | %"+maxLength+"s | %3d.%1d MB\n", files.length - i, files[i].getName(), (int) fileSize,
-							(int) (fileSize % 1 * 10));
+					System.out.printf("%3d | %" + maxLength + "s | %3d.%1d MB\n", files.length - i, files[i].getName(),
+							(int) fileSize, (int) (fileSize % 1 * 10));
 				}
 				System.out.printf("\n%5s総ファイル容量: %.2f MB\n\n", "", allFileSize);
 				try {
@@ -122,7 +147,7 @@ public class vpnPacketLogAnalyzer {
 				files = null;
 			}
 			cslClear();
-			System.out.printf("選択されたファイル:%s\nロード中...", fname);
+			System.out.printf("選択されたファイル:%s\n\nロード中...", fname);
 			fileLine = 0;
 			httpLine = 0;
 			String[] logtmp;
@@ -244,9 +269,31 @@ public class vpnPacketLogAnalyzer {
 				}
 			}
 
+			System.out.print("完了\n      IPリストを作成しています...");
+
+			for (int i = 0; i < httplog.size(); i++) {
+				addressExt = false;
+				ipAddressList ipAddrL = new ipAddressList();
+				address = httplog.get(i).get(urlC.accessIP);
+				for (int j = 0; j < ipAddressArr.size(); j++) {
+					if (address.equals(ipAddressArr.get(j).getIp()[0] + "." + ipAddressArr.get(j).getIp()[1] + "."
+							+ ipAddressArr.get(j).getIp()[2] + "." + ipAddressArr.get(j).getIp()[3])) {
+						ipAddressArr.get(j).addCount();
+						addressExt = true;
+						break;
+					}
+				}
+				if (!addressExt) {
+					ipAddrL.addAddress(address);
+					ipAddressArr.add(ipAddrL);
+				}
+
+			}
+			ipAddressArr.sort(Comparator.comparing(ipAddressList::getCount).reversed());
+
 			System.out.printf("完了\n\n%10s:%8d\n%8s:%8d\n", "ログ行数", fileLine, "検索対象行数", httpLine);
 
-			askSearch=true;
+			askSearch = true;
 			while (true) {
 				System.out.printf("\n%" + maxLength + "s |%8s", "userName", "アクセス数\n");
 				for (int i = 0; i < userArr.size(); i++) {
@@ -260,19 +307,28 @@ public class vpnPacketLogAnalyzer {
 							addressArr.get(i).getCount());
 				}
 
+				System.out.printf("\n%" + maxLength + "s |%8s", "IPaddress", "アクセス数\n");
+				for (int i = 0; i < ipAddressArr.size() && i < 10; i++) {
+					System.out.printf("%" + (maxLength - 15) + "d. %3d. %3d. %3d |%8d\n",
+							ipAddressArr.get(i).getIp()[0], ipAddressArr.get(i).getIp()[1],
+							ipAddressArr.get(i).getIp()[2], ipAddressArr.get(i).getIp()[3],
+							ipAddressArr.get(i).getCount());
+				}
+
 				while (askSearch) {
 					retry = inputStrData("\nこのファイルを検索しますか？(y/n)");
 					if (retry.equals("y") || retry.equals("n")) {
 						break;
 					}
 				}
-				if (askSearch&&retry.equals("n")) {
+				if (askSearch && retry.equals("n")) {
 					packetInfo = null;
 					userName = null;
 					targetUrl = null;
 					httpMethod = null;
 					retry = null;
 					addressArr.clear();
+					ipAddressArr.clear();
 					userArr.clear();
 					httplogArr.clear();
 					httplog.clear();
@@ -313,12 +369,14 @@ public class vpnPacketLogAnalyzer {
 					searchTimeS = inputStrData("始点時間(HH:MM)");
 					searchTimeE = inputStrData("終点時間(HH:MM)");
 					if (searchTimeS != "") {
-						timeS = Integer.parseInt(searchTimeS.split(":", 0)[0]) * 60 + Integer.parseInt(searchTimeS.split(":", 0)[1]);
+						timeS = Integer.parseInt(searchTimeS.split(":", 0)[0]) * 60
+								+ Integer.parseInt(searchTimeS.split(":", 0)[1]);
 					} else {
 						timeS = 0;
 					}
 					if (searchTimeE != "") {
-						timeE = Integer.parseInt(searchTimeE.split(":", 0)[0]) * 60 + Integer.parseInt(searchTimeE.split(":", 0)[1]);
+						timeE = Integer.parseInt(searchTimeE.split(":", 0)[0]) * 60
+								+ Integer.parseInt(searchTimeE.split(":", 0)[1]);
 					} else {
 						timeE = 1440;
 					}
@@ -359,7 +417,7 @@ public class vpnPacketLogAnalyzer {
 						logLine++;
 					}
 				}
-				System.out.printf("\n%8d / %8d (%3f %%)\n\n", logLine, httpLine,(float) logLine / httpLine * 100.0);
+				System.out.printf("\n%8d / %8d (%3f %%)\n\n", logLine, httpLine, (float) logLine / httpLine * 100.0);
 
 				while (true) {
 					retry = inputStrData("検索条件を指定し直しますか(y/n)");
@@ -374,6 +432,7 @@ public class vpnPacketLogAnalyzer {
 					httpMethod = null;
 					retry = "noInput";
 					addressArr.clear();
+					ipAddressArr.clear();
 					userArr.clear();
 					httplogArr.clear();
 					httplog.clear();
