@@ -85,12 +85,17 @@ class ipAddressList {
 	public long getCount() {
 		return this.count;
 	}
+
+	public boolean verifyIP(String ipAddr) {
+		int ipArr[] = this.getIp();
+		return ipAddr.equals(ipArr[0] + "." + ipArr[1] + "." + ipArr[2] + "." + ipArr[3]);
+	}
 }
 
 public class vpnPacketLogAnalyzer {
 	public static void main(String[] args) {
 
-		final String version = "1.08.0";
+		final String version = "1.08.1";
 
 		urlConst urlC = new urlConst();
 
@@ -283,8 +288,7 @@ public class vpnPacketLogAnalyzer {
 				ipAddressList ipAddrL = new ipAddressList();
 				address = httplog.get(i).get(urlC.accessIP);
 				for (int j = 0; j < ipAddressArr.size(); j++) {
-					if (address.equals(ipAddressArr.get(j).getIp()[0] + "." + ipAddressArr.get(j).getIp()[1] + "."
-							+ ipAddressArr.get(j).getIp()[2] + "." + ipAddressArr.get(j).getIp()[3])) {
+					if (ipAddressArr.get(j).verifyIP(address)) {
 						ipAddressArr.get(j).addCount();
 						addressExt = true;
 						break;
@@ -316,9 +320,9 @@ public class vpnPacketLogAnalyzer {
 
 				System.out.printf("\n%" + maxLength + "s |%8s", "IPaddress", "アクセス数\n");
 				for (int i = 0; i < ipAddressArr.size() && i < 10; i++) {
+					int ipArr[]=ipAddressArr.get(i).getIp();
 					System.out.printf("%" + (maxLength - 15) + "d. %3d. %3d. %3d |%8d\n",
-							ipAddressArr.get(i).getIp()[0], ipAddressArr.get(i).getIp()[1],
-							ipAddressArr.get(i).getIp()[2], ipAddressArr.get(i).getIp()[3],
+							ipArr[0],ipArr[1],ipArr[2], ipArr[3],
 							ipAddressArr.get(i).getCount());
 				}
 
