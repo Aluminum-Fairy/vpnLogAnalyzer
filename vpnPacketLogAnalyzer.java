@@ -282,7 +282,7 @@ public class vpnPacketLogAnalyzer {
 			}
 			addressArr.sort(Comparator.comparing(addressList::getCount).reversed());
 			maxLength = 0;
-			for (int i = 0; i < addressArr.size() && i < 10; i++) {
+			for (int i = 0; i < addressArr.size() && i < listNum; i++) {
 				if (maxLength < addressArr.get(i).getAddrLength()) {
 					maxLength = addressArr.get(i).getAddrLength();
 				}
