@@ -117,7 +117,7 @@ public class vpnPacketLogAnalyzer {
 
 		for (int i = 0; i < args.length; i++) {
 			if (args[i].contains("-filePath")) {
-				filePath = args[i+1].split("=", 2)[1];
+				filePath = args[i+1];
 			}
 			if (args[i].contains("-list")){
 				listNum = Integer.parseInt(args[i+1]);
