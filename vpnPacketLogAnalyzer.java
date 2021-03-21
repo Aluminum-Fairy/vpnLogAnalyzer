@@ -56,6 +56,9 @@ class addressList {
 		return this.address.length();
 	}
 
+	public boolean verifyAddr(String address) {
+		return this.address.equals(address);
+	}
 }
 
 class ipAddressList {
@@ -63,9 +66,9 @@ class ipAddressList {
 	private long count;
 
 	public void addAddress(String insertIP) {
-		int [] ip = Stream.of(insertIP.split(Pattern.quote("."))).mapToInt(Integer::parseInt).toArray();
-		for(int i=0;i < 4 ;i++){
-			this.ip[i] = (byte)(ip[i]-128);
+		int[] ip = Stream.of(insertIP.split(Pattern.quote("."))).mapToInt(Integer::parseInt).toArray();
+		for (int i = 0; i < 4; i++) {
+			this.ip[i] = (byte) (ip[i] - 128);
 		}
 		this.count = 1;
 	}
@@ -76,7 +79,7 @@ class ipAddressList {
 
 	public int[] getIp() {
 		int ip[] = new int[4];
-		for(int i=0;i<4;i++){
+		for (int i = 0; i < 4; i++) {
 			ip[i] = (this.ip[i] + 128) & 0xFF;
 		}
 		return ip;
@@ -261,7 +264,7 @@ public class vpnPacketLogAnalyzer {
 				addressList addrL = new addressList();
 				address = httplog.get(i).get(urlC.pakcetInfo).split(" ", 0)[2].split("=", 2)[1];
 				for (int j = 0; j < addressArr.size(); j++) {
-					if (address.contains(addressArr.get(j).getAddress())) {
+					if (addressArr.get(j).verifyAddr(address)) {
 						addressArr.get(j).addCount();
 						addressExt = true;
 						break;
@@ -320,10 +323,9 @@ public class vpnPacketLogAnalyzer {
 
 				System.out.printf("\n%" + maxLength + "s |%8s", "IPaddress", "アクセス数\n");
 				for (int i = 0; i < ipAddressArr.size() && i < 10; i++) {
-					int ipArr[]=ipAddressArr.get(i).getIp();
-					System.out.printf("%" + (maxLength - 15) + "d. %3d. %3d. %3d |%8d\n",
-							ipArr[0],ipArr[1],ipArr[2], ipArr[3],
-							ipAddressArr.get(i).getCount());
+					int ipArr[] = ipAddressArr.get(i).getIp();
+					System.out.printf("%" + (maxLength - 15) + "d. %3d. %3d. %3d |%8d\n", ipArr[0], ipArr[1], ipArr[2],
+							ipArr[3], ipAddressArr.get(i).getCount());
 				}
 
 				while (askSearch) {
