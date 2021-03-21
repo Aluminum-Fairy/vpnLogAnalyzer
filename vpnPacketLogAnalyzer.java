@@ -106,7 +106,7 @@ public class vpnPacketLogAnalyzer {
 				filePath = "/usr/local/vpnserver/packet_log/Main1";
 		String packetInfo[] = new String[3];
 		File fname;
-		int fileLine, httpLine, timeS, timeE, logLine, logTime, maxLength;
+		int fileLine, httpLine, timeS, timeE, logLine, logTime, maxLength,listNum=10;
 		double allFileSize, fileSize;
 		boolean bTargetUrl, bUserName, bHttpMethod, bOutput, askSearch;
 		ArrayList<String> httplogArr = new ArrayList<String>();
@@ -116,8 +116,11 @@ public class vpnPacketLogAnalyzer {
 		ArrayList<ipAddressList> ipAddressArr = new ArrayList<ipAddressList>();
 
 		for (int i = 0; i < args.length; i++) {
-			if (args[i].contains("filePath=")) {
-				filePath = args[i].split("=", 2)[1];
+			if (args[i].contains("-filePath")) {
+				filePath = args[i+1].split("=", 2)[1];
+			}
+			if (args[i].contains("-list")){
+				listNum = Integer.parseInt(args[i+1]);
 			}
 		}
 
@@ -317,13 +320,13 @@ public class vpnPacketLogAnalyzer {
 				}
 
 				System.out.printf("\n%" + maxLength + "s |%8s", "Address", "アクセス数\n");
-				for (int i = 0; i < addressArr.size() && i < 10; i++) {
+				for (int i = 0; i < addressArr.size() && i < listNum; i++) {
 					System.out.printf("%" + -maxLength + "s |%8d\n", addressArr.get(i).getAddress(),
 							addressArr.get(i).getCount());
 				}
 
 				System.out.printf("\n%" + maxLength + "s |%8s", "IPaddress", "アクセス数\n");
-				for (int i = 0; i < ipAddressArr.size() && i < 10; i++) {
+				for (int i = 0; i < ipAddressArr.size() && i < listNum; i++) {
 					int ipArr[] = ipAddressArr.get(i).getIp();
 					System.out.printf("%" + (maxLength - 15) + "d. %3d. %3d. %3d |%8d\n", ipArr[0], ipArr[1], ipArr[2],
 							ipArr[3], ipAddressArr.get(i).getCount());
