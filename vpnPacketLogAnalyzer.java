@@ -36,7 +36,7 @@ class addressList {
 	private long count;
 
 	public void addAddress(String insertAddress) {
-		this.address = insertAddress.split("://")[1].split("/")[0];
+		this.address = insertAddress;
 		this.count = 1;
 	}
 
@@ -57,7 +57,7 @@ class addressList {
 	}
 
 	public boolean verifyAddr(String address) {
-		return this.address.equals(address.split("://")[1].split("/")[0]);
+		return this.address.equals(address);
 	}
 }
 
@@ -262,7 +262,8 @@ public class vpnPacketLogAnalyzer {
 			for (int i = 0; i < httplog.size(); i++) {
 				addressExt = false;
 				addressList addrL = new addressList();
-				address = httplog.get(i).get(urlC.pakcetInfo).split(" ", 0)[2].split("=", 2)[1];
+				address = httplog.get(i).get(urlC.pakcetInfo).split(" ", 0)[2].split("=", 2)[1].split("://")[1]
+						.split("/")[0];
 				for (int j = 0; j < addressArr.size(); j++) {
 					if (addressArr.get(j).verifyAddr(address)) {
 						addressArr.get(j).addCount();
