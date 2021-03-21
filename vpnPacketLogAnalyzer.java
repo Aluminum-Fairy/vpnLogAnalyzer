@@ -98,7 +98,7 @@ class ipAddressList {
 public class vpnPacketLogAnalyzer {
 	public static void main(String[] args) {
 
-		final String version = "1.08.1";
+		final String version = "1.08.2";
 
 		urlConst urlC = new urlConst();
 
