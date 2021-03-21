@@ -2,6 +2,7 @@ import java.io.*;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Scanner;
 import java.util.regex.Pattern;
@@ -11,44 +12,54 @@ import logConst.urlConst;
 
 class userList {
 	private String name;
-	private long count;
+	private int count;
+	private ArrayList<Integer> index=new ArrayList<Integer>();
 
-	public void addName(String insertName) {
+	public void addName(String insertName,int index) {
 		this.name = insertName;
 		this.count = 1;
+		this.index.add(index);
 	}
 
-	public void addCount() {
+	public void addCount(int index) {
 		this.count++;
+		this.index.add(index);
 	}
 
 	public String getName() {
 		return this.name;
 	}
 
-	public long getCount() {
+	public int getCount() {
 		return this.count;
+	}
+
+	public ArrayList<Integer> getIndex(){
+		return this.index;
 	}
 }
 
 class addressList {
 	private String address;
-	private long count;
+	private int count;
+	private ArrayList<Integer> index = new ArrayList<Integer>();
 
-	public void addAddress(String insertAddress) {
+	public void addAddress(String insertAddress,int index) {
 		this.address = insertAddress.split("://")[1].split("/")[0];
 		this.count = 1;
+		this.index.add(index);
 	}
 
-	public void addCount() {
+	public void addCount(int index) {
 		this.count++;
+		this.index.add(index);
 	}
 
 	public String getAddress() {
 		return this.address;
 	}
 
-	public long getCount() {
+	public int getCount() {
 		return this.count;
 	}
 
@@ -56,22 +67,28 @@ class addressList {
 		return this.address.length();
 	}
 
+	public ArrayList<Integer> getIndex() {
+		return this.index;
+	}
 }
 
 class ipAddressList {
 	private byte[] ip = new byte[4];
-	private long count;
+	private int count;
+	private ArrayList<Integer> index = new ArrayList<Integer>();
 
-	public void addAddress(String insertIP) {
+	public void addAddress(String insertIP,int index) {
 		int [] ip = Stream.of(insertIP.split(Pattern.quote("."))).mapToInt(Integer::parseInt).toArray();
 		for(int i=0;i < 4 ;i++){
-			this.ip[i] = (byte)(ip[i]-128);
+			this.ip[i] = (byte)(ip[i]+128);
 		}
 		this.count = 1;
+		this.index.add(index);
 	}
 
-	public void addCount() {
+	public void addCount(int index) {
 		this.count++;
+		this.index.add(index);
 	}
 
 	public int[] getIp() {
@@ -82,15 +99,23 @@ class ipAddressList {
 		return ip;
 	}
 
-	public long getCount() {
+	public int getCount() {
 		return this.count;
+	}
+
+	public ArrayList<Integer> getIndex() {
+		return this.index;
+	}
+
+	public boolean verifyIP(String ipAddr){
+		return ipAddr.equals(this.getIp()[0]+"."+this.getIp()[1]+"."+this.getIp()[2]+"."+this.getIp()[3]);
 	}
 }
 
 public class vpnPacketLogAnalyzer {
 	public static void main(String[] args) {
 
-		final String version = "1.08.0";
+		final String version = "2.00.0";
 
 		urlConst urlC = new urlConst();
 
@@ -234,13 +259,13 @@ public class vpnPacketLogAnalyzer {
 				userName = httplog.get(i).get(urlC.User).split("-", 0)[1];
 				for (int j = 0; j < userArr.size(); j++) {
 					if (userArr.get(j).getName().equals(userName)) {
-						userArr.get(j).addCount();
+						userArr.get(j).addCount(i);
 						userExt = true;
 						break;
 					}
 				}
 				if (!userExt) {
-					userL.addName(userName);
+					userL.addName(userName,i);
 					userArr.add(userL);
 				}
 
@@ -257,13 +282,13 @@ public class vpnPacketLogAnalyzer {
 				address = httplog.get(i).get(urlC.pakcetInfo).split(" ", 0)[2].split("=", 2)[1];
 				for (int j = 0; j < addressArr.size(); j++) {
 					if (address.contains(addressArr.get(j).getAddress())) {
-						addressArr.get(j).addCount();
+						addressArr.get(j).addCount(i);
 						addressExt = true;
 						break;
 					}
 				}
 				if (!addressExt) {
-					addrL.addAddress(address);
+					addrL.addAddress(address,i);
 					addressArr.add(addrL);
 				}
 
@@ -277,28 +302,30 @@ public class vpnPacketLogAnalyzer {
 			}
 
 			System.out.print("完了\n      IPリストを作成しています...");
-
+			long startTime = System.nanoTime();
 			for (int i = 0; i < httplog.size(); i++) {
 				addressExt = false;
 				ipAddressList ipAddrL = new ipAddressList();
 				address = httplog.get(i).get(urlC.accessIP);
 				for (int j = 0; j < ipAddressArr.size(); j++) {
-					if (address.equals(ipAddressArr.get(j).getIp()[0] + "." + ipAddressArr.get(j).getIp()[1] + "."
-							+ ipAddressArr.get(j).getIp()[2] + "." + ipAddressArr.get(j).getIp()[3])) {
-						ipAddressArr.get(j).addCount();
+					if (ipAddressArr.get(j).verifyIP(address)) {
+						ipAddressArr.get(j).addCount(i);
 						addressExt = true;
 						break;
 					}
 				}
 				if (!addressExt) {
-					ipAddrL.addAddress(address);
+					ipAddrL.addAddress(address,i);
 					ipAddressArr.add(ipAddrL);
 				}
 
 			}
 			ipAddressArr.sort(Comparator.comparing(ipAddressList::getCount).reversed());
+			long endTime = System.nanoTime();
 
 			System.out.printf("完了\n\n%10s:%8d\n%8s:%8d\n", "ログ行数", fileLine, "検索対象行数", httpLine);
+
+			System.out.println("処理時間：" + ((endTime - startTime) / 1000) + " マイクロ秒");
 
 			askSearch = true;
 			while (true) {
@@ -372,6 +399,8 @@ public class vpnPacketLogAnalyzer {
 					bHttpMethod = true;
 				}
 
+
+
 				while (true) {
 					searchTimeS = inputStrData("始点時間(HH:MM)");
 					searchTimeE = inputStrData("終点時間(HH:MM)");
@@ -402,30 +431,48 @@ public class vpnPacketLogAnalyzer {
 				bOutput = retry.equals("y");
 
 				logLine = 0;
-				if (bOutput) {
-					System.out.printf("\n\n%9s | %15s | %11s | %s\n", "Time", "userName", "Type", "ConnectionPoint");
-				}
-				for (int i = 0; i < httplog.size(); i++) {
-					httplogArr = httplog.get(i);
-					packetInfo = httplogArr.get(urlC.pakcetInfo).split(" ", 0);
-					logTime = Integer.parseInt(httplogArr.get(urlC.time).split(":", 0)[0]) * 60
-							+ Integer.parseInt(httplogArr.get(urlC.time).split(":", 0)[1]);
-					if ((bUserName == httplogArr.get(urlC.User).contains(userName) || userName == "")
-							&& (bHttpMethod == packetInfo[1].contains(httpMethod) || httpMethod == "")
-							&& (bTargetUrl == packetInfo[2].contains(targetUrl) || targetUrl == "") && timeS <= logTime
-							&& timeE >= logTime) {
+				ArrayList<Integer>index = new ArrayList<Integer>();
+				ArrayList<Integer>tmp1 = new ArrayList<Integer>();
+				ArrayList<Integer> tmp2 = new ArrayList<Integer>();
+				ArrayList<ArrayList<Integer>>indexL = new ArrayList<ArrayList<Integer>>();
 
-						if (bOutput) {
-							System.out.printf("%9s | %15s | %11s | %s\n",
-									httplogArr.get(urlC.time).split(Pattern.quote("."), 0)[0],
-									httplogArr.get(urlC.User).split("-", 0)[1], packetInfo[1].split("=", 0)[1],
-									packetInfo[2].split("=", 2)[1]);
+				if(!userName.isBlank()){
+					for(int i=0;i<userArr.size();i++){
+						if(userArr.get(i).getName().contains(userName) && bUserName || !userArr.get(i).getName().contains(userName) && !bUserName){
+							tmp1.addAll(userArr.get(i).getIndex());
 						}
-						logLine++;
+					}
+					indexL.add(tmp1);
+
+				}
+
+
+				if (!targetUrl.isBlank()) {
+					for (int i = 0; i < addressArr.size(); i++) {
+						if (addressArr.get(i).getAddress().contains(targetUrl) && bTargetUrl || !addressArr.get(i).getAddress().contains(targetUrl) && !bTargetUrl) {
+							tmp2.addAll(addressArr.get(i).getIndex());
+						}
+					}
+					indexL.add(tmp2);
+				}
+
+				for(int i=1;i<indexL.size() && indexL.size()>0;i++){
+					for (int a : indexL.get(0)) {
+						if (indexL.get(1).contains(a)) {
+							index.add(a);
+						}
 					}
 				}
-				System.out.printf("\n%8d / %8d (%3f %%)\n\n", logLine, httpLine, (float) logLine / httpLine * 100.0);
 
+
+				if (bOutput) {
+					for(int i=0;i<index.size();i++){
+						System.out.println(httplog.get(index.get(i)).get(urlC.User).split("-", 0)[1]+":"+httplog.get(index.get(i)).get(urlC.pakcetInfo).split(" ", 0)[2].split("=", 2)[1]);
+					}
+
+				}
+
+				index.clear();
 				while (true) {
 					retry = inputStrData("検索条件を指定し直しますか(y/n)");
 					if (retry.equals("y") || retry.equals("n")) {
