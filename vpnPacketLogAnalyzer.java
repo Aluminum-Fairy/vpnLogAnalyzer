@@ -108,7 +108,8 @@ class ipAddressList {
 	}
 
 	public boolean verifyIP(String ipAddr){
-		return ipAddr.equals(this.getIp()[0]+"."+this.getIp()[1]+"."+this.getIp()[2]+"."+this.getIp()[3]);
+		int ipArr[] = this.getIp();
+		return ipAddr.equals(ipArr[0]+"."+ ipArr[1]+"."+ipArr[2]+"."+ ipArr[3]);
 	}
 }
 
