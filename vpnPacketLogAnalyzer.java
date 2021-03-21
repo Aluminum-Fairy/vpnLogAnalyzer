@@ -344,10 +344,10 @@ public class vpnPacketLogAnalyzer {
 
 				System.out.printf("\n%" + maxLength + "s |%8s", "IPaddress", "アクセス数\n");
 				for (int i = 0; i < ipAddressArr.size() && i < 10; i++) {
+					int ipArr[] = ipAddressArr.get(i).getIp();
 					System.out.printf("%" + (maxLength - 15) + "d. %3d. %3d. %3d |%8d\n",
-							ipAddressArr.get(i).getIp()[0], ipAddressArr.get(i).getIp()[1],
-							ipAddressArr.get(i).getIp()[2], ipAddressArr.get(i).getIp()[3],
-							ipAddressArr.get(i).getCount());
+							ipArr[0], ipArr[1], ipArr[2],
+							ipArr[3], ipAddressArr.get(i).getCount());
 				}
 
 				while (askSearch) {
