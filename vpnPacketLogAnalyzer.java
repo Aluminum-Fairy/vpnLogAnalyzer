@@ -57,7 +57,7 @@ class addressList {
 	}
 
 	public boolean verifyAddr(String address) {
-		return this.address.equals(address);
+		return this.address.equals(address.split("://")[1].split("/")[0]);
 	}
 }
 
